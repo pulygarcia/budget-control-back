@@ -1,4 +1,4 @@
-import { Sequelize } from "sequelize";
+import { Sequelize } from "sequelize-typescript";
 import dotenv from 'dotenv'
 
 dotenv.config(); //enable env variables
@@ -9,9 +9,10 @@ export const db = new Sequelize(DB_URL, {
     dialect: "postgres",
     dialectOptions: {
         ssl: {
-          require: true,
-          rejectUnauthorized: false, // allow connections without strict validations
+            require: true,
+            rejectUnauthorized: false, // allow connections without strict validations
         },
     },
-    logging: false, // avoid sql logs in console
+    models: [__dirname + "/../models/**/*"], // register all models,
+    logging: false
 })

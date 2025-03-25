@@ -1,6 +1,7 @@
 import express from 'express' 
 import morgan from 'morgan'
 import {db} from './config/database';
+import budgetRoutes from './routes/budget.router'
 
 async function connectDB() {
     try {
@@ -19,6 +20,7 @@ app.use(morgan('dev'))
 
 app.use(express.json())
 
-
+//define routes
+app.use('/api/budgets', budgetRoutes);
 
 export default app
