@@ -28,51 +28,28 @@ export class BudgetController {
   }
 
   static async findById(req: Request, res: Response) {
-    try {
-       const budget = req.budget;
-
-        res.status(201).json(budget);
-
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({ error: `Error getting budget` });
-    }
+    const budget = req.budget;
+    res.status(201).json(budget);
   }
 
   static async updateBudget(req: Request, res: Response) {
-    try {
-        const {name, amount} = req.body;
-        const budget = req.budget;
+      const newData = {
+          name: req.body.name || req.budget.name,
+          amount: req.body.amount || req.budget.amount
+      }
 
-        const newData = {
-            name: name || budget.name,
-            amount: amount || budget.amount
-        }
-        await budget.update(newData);
+      await req.budget.update(newData); //budget is injected in req by the middleware 'validateHandleExist (budget)'
 
-        res.status(201).json({
-            msg: 'Budget has been updated'
-        });
-
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({ error: `Could not update budget` });
-    }
+      res.status(201).json({
+          msg: 'Budget has been updated'
+      });
   }
 
   static async deleteBudget(req: Request, res: Response) {
-    try {
-        const budget = req.budget
+      await req.budget.destroy();
 
-        await budget.destroy();
-
-        res.status(201).json({
-            msg: 'Budget has been deleted'
-        });
-
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({ error: `Error deleting budget` });
-    }
+      res.status(201).json({
+        msg: 'Budget has been deleted'
+      });
   }
 }

@@ -27,8 +27,8 @@ export const valiadateHandleExist = async (req:Request, res:Response, next:NextF
 
     } catch (error) {
         console.log(error);
-        res.status(404).json({ error: `Badget not found` });
-        }
+        res.status(500).json({ error: `Has been an error` });
+    }
 
     next();
 }
