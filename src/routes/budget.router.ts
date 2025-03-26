@@ -1,7 +1,8 @@
 import express from 'express'
 import { BudgetController } from '../controllers/budget.controller';
 import { handleInputErrors } from '../middleware/validation';
-import {body} from 'express-validator'
+import { valiadateHandleExist } from '../middleware/budget';
+import {body, param} from 'express-validator'
 
 const router = express.Router();
 
@@ -19,6 +20,33 @@ router.post(
         .isFloat({ min: 1 }).withMessage('Amount must be at least 1'),
     handleInputErrors,
     BudgetController.create
+);
+
+router.get('/:id', 
+    param('id')
+    .isInt({ min: 1 }).withMessage('Id must be a number')
+    .toInt(),
+    handleInputErrors,
+    valiadateHandleExist,
+    BudgetController.findById
+);
+
+router.patch('/:id', 
+    param('id')
+    .isInt({ min: 1 }).withMessage('Id must be a number')
+    .toInt(),
+    handleInputErrors,
+    valiadateHandleExist,
+    BudgetController.updateBudget
+);
+
+router.delete('/:id', 
+    param('id')
+    .isInt({ min: 1 }).withMessage('Id must be a number')
+    .toInt(),
+    handleInputErrors,
+    valiadateHandleExist,
+    BudgetController.deleteBudget
 );
 
 export default router
