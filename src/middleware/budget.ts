@@ -9,15 +9,15 @@ declare global {
     }
   }
 
-export const valiadateHandleExist = async (req:Request, res:Response, next:NextFunction) => {
+export const validateBudgetExist = async (req:Request, res:Response, next:NextFunction) => {
     try {
-        const { id } = req.params;
+        const { budgetId } = req.params;
 
-        const budget = await Budget.findByPk(id);
+        const budget = await Budget.findByPk(budgetId);
 
         if(!budget){
             res.status(404).json(
-                { error: `Budget with id ${id} not found` }
+                { error: `Budget with id ${budgetId} not found` }
             )
 
             return;

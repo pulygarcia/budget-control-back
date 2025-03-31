@@ -1,8 +1,10 @@
 import express from 'express'
 import { BudgetController } from '../controllers/budget.controller';
+import { ExpensesController } from '../controllers/expense.controller';
 import { handleInputErrors } from '../middleware/validation';
-import { valiadateHandleExist } from '../middleware/budget';
+import { validateBudgetExist } from '../middleware/budget';
 import {body, param} from 'express-validator'
+import { validateExpenseExist } from '../middleware/expense';
 
 const router = express.Router();
 
@@ -22,31 +24,72 @@ router.post(
     BudgetController.create
 );
 
-router.get('/:id', 
-    param('id')
+router.get('/:budgetId', 
+    param('budgetId')
     .isInt({ min: 1 }).withMessage('Id must be a number')
     .toInt(),
     handleInputErrors,
-    valiadateHandleExist,
+    validateBudgetExist,
     BudgetController.findById
 );
 
-router.patch('/:id', 
-    param('id')
+router.patch('/:budgetId', 
+    param('budgetId')
     .isInt({ min: 1 }).withMessage('Id must be a number')
     .toInt(),
     handleInputErrors,
-    valiadateHandleExist,
+    validateBudgetExist,
     BudgetController.updateBudget
 );
 
-router.delete('/:id', 
-    param('id')
+router.delete('/:budgetId', 
+    param('budgetId')
     .isInt({ min: 1 }).withMessage('Id must be a number')
     .toInt(),
     handleInputErrors,
-    valiadateHandleExist,
+    validateBudgetExist,
     BudgetController.deleteBudget
+);
+
+/**Expenses routes */
+router.post('/:budgetId/expenses',
+    validateBudgetExist,
+    ExpensesController.create
+);
+router.get('/:budgetId/expenses/:expenseId', 
+    param('budgetId')
+    .isInt({ min: 1 }).withMessage('Id must be a number')
+    .toInt(),
+    param('expenseId')
+    .isInt({ min: 1 }).withMessage('Id must be a number')
+    .toInt(),
+    handleInputErrors,
+    validateExpenseExist,
+    ExpensesController.getById
+);
+
+router.put('/:budgetId/expenses/:expenseId', 
+    param('budgetId')
+    .isInt({ min: 1 }).withMessage('Id must be a number')
+    .toInt(),
+    param('expenseId')
+    .isInt({ min: 1 }).withMessage('Id must be a number')
+    .toInt(),
+    handleInputErrors,
+    validateExpenseExist,
+    ExpensesController.updateById
+);
+
+router.delete('/:budgetId/expenses/:expenseId',
+    param('budgetId')
+    .isInt({ min: 1 }).withMessage('Id must be a number')
+    .toInt(),
+    param('expenseId')
+    .isInt({ min: 1 }).withMessage('Id must be a number')
+    .toInt(),
+    handleInputErrors,
+    validateExpenseExist,
+    ExpensesController.deleteById
 );
 
 export default router
