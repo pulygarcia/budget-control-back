@@ -1,8 +1,8 @@
 import type { Request, Response } from 'express'
 import bcrypt from 'bcrypt'
 import User from '../models/user.model';
-import {generateToken} from '../utils/token'
-import { EmailService } from '../emails/verifyAccountEmail';
+import {createJWT, generateToken} from '../utils/token'
+import { EmailService } from '../emails/emailServices';
 
 export class AuthController {
     static register = async (req: Request, res: Response) => {
@@ -35,12 +35,126 @@ export class AuthController {
         }
     }
 
-    // static verify = async (req: Request, res: Response) => {
-    //     try {
+    static verify = async (req: Request, res: Response) => {
+        try {
+            const {token} = req.body;
+
+            const user = await User.findOne({ where: { token} });
+            if (!user) {
+                const error = new Error('Unauthorized, invalid token')
+                res.status(401).json({msg: error.message});
+                return;
+            }
+            //change verified status
+            user.token = '';
+            user.verified = true;
+
+            await user.save();
+            const {username, email} = user;
+            EmailService.sendConfirmedAccountEmail(username, email);
             
-    //     } catch (error) {
-    //         console.error("Has been an error", error);
-    //         res.status(500).json({ message: "Internal server error" });
-    //     }
-    // }
+            res.status(201).json({msg: 'Your account has been verified'});
+        } catch (error) {
+            console.error("Has been an error", error);
+            res.status(500).json({ message: "Internal server error" });
+        }
+    }
+
+    static login = async (req: Request, res: Response) => {
+        try {
+            const {email, password} = req.body;
+
+            const user = await User.findOne({ where: { email} });
+            if (!user) {
+                const error = new Error(`User with email ${email} not found`)
+                res.status(404).json({msg: error.message});
+                return;
+            }
+
+            if (!user.verified) {
+                const error = new Error(`Please verify your account`)
+                res.status(403).json({msg: error.message});
+                return;
+            }
+
+            const isPasswordValid = await bcrypt.compare(password, user.password);
+            if (!isPasswordValid) {
+                res.status(401).json({ msg: 'Incorrect password' });
+                return
+            }
+
+            const token = createJWT(user.id);
+            res.json({token});
+
+        } catch (error) {
+            console.error("Has been an error", error);
+            res.status(500).json({ message: "Internal server error" });
+        }
+    }
+
+    static forgotPassword = async (req: Request, res: Response) => {
+        try {
+            const {email} = req.body;
+            const user = await User.findOne({ where: { email} });
+            if (!user) {
+                const error = new Error(`The account with email: ${email} does not exist`)
+                res.status(404).json({msg: error.message});
+                return;
+            }
+            user.token = generateToken(); //save 6 digits code in user data
+            user.save();
+
+            EmailService.sendForgotPasswordEmail(email, user.token);
+
+            res.json({msg: 'Please check your email'});
+
+        } catch (error) {
+            console.error("Has been an error", error);
+            res.status(500).json({ message: "Internal server error" });
+        }
+    }
+
+    static validateToken = async (req: Request, res: Response) => {
+        try {
+            const {token} = req.body;
+            const tokenExist = await User.findOne({ where: { token} });
+            if (!tokenExist) {
+                const error = new Error(`Invalid token`)
+                res.status(403).json({msg: error.message});
+                return;
+            }
+
+            res.json({msg: 'Token is valid'});
+
+        } catch (error) {
+            console.error("Has been an error", error);
+            res.status(500).json({ message: "Internal server error" });
+        }
+    }
+
+    static resetPasswordWithToken = async (req: Request, res: Response) => {
+        try {
+            const {token} = req.params;
+            const {newPassword} = req.body;
+
+            const user = await User.findOne({ where: { token} });
+            if (!user) {
+                const error = new Error(`Invalid token`)
+                res.status(403).json({msg: error.message});
+                return;
+            }
+            //hash the new one
+            const newHashedPassword = await bcrypt.hash(newPassword, 10);
+
+            user.password = newHashedPassword;
+            user.token = ''; //disable token
+            await user.save();
+
+            res.json({msg: 'Password modified correctly'});
+
+        } catch (error) {
+            console.error("Has been an error", error);
+            res.status(500).json({ message: "Internal server error" });
+        }
+    }
 }
