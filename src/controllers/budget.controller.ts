@@ -5,7 +5,7 @@ import Expense from "../models/expense.model";
 export class BudgetController {
   static async getAll(req: Request, res: Response) {
     try {
-      const budgets = await Budget.findAll(); //TODO: filter by authenticated user
+      const budgets = await Budget.findAll({where:{userId: req.user.id}}); //filter by authenticated user
       res.status(200).json(budgets);
     } catch (error) {
       res.status(500).json({ error: "Error getting budgets" });
@@ -16,7 +16,7 @@ export class BudgetController {
     try {
         const { name, amount } = req.body;
 
-        const budget = new Budget({ name, amount });
+        const budget = new Budget({ name, amount, userId: req.user.id});
 
         await budget.save();  
 

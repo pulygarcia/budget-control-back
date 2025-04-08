@@ -2,11 +2,14 @@ import express from 'express'
 import { BudgetController } from '../controllers/budget.controller';
 import { ExpensesController } from '../controllers/expense.controller';
 import { handleInputErrors } from '../middleware/validation';
-import { validateBudgetExist } from '../middleware/budget';
+import { authorized, validateBudgetExist } from '../middleware/budget';
 import {body, param} from 'express-validator'
 import { validateExpenseExist } from '../middleware/expense';
+import { authMiddleware } from '../middleware/authentication';
 
 const router = express.Router();
+
+router.use(authMiddleware);//in all requests
 
 router.get('/', 
     BudgetController.getAll
@@ -30,6 +33,7 @@ router.get('/:budgetId',
     .toInt(),
     handleInputErrors,
     validateBudgetExist,
+    authorized, //avoid manipulate other people budgets
     BudgetController.findById
 );
 
@@ -39,6 +43,7 @@ router.patch('/:budgetId',
     .toInt(),
     handleInputErrors,
     validateBudgetExist,
+    authorized,
     BudgetController.updateBudget
 );
 
@@ -48,6 +53,7 @@ router.delete('/:budgetId',
     .toInt(),
     handleInputErrors,
     validateBudgetExist,
+    authorized,
     BudgetController.deleteBudget
 );
 

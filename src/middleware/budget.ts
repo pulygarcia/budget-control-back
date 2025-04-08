@@ -32,3 +32,22 @@ export const validateBudgetExist = async (req:Request, res:Response, next:NextFu
 
     next();
 }
+
+export const authorized = async (req:Request, res:Response, next:NextFunction) => {
+  //console.log(req.user.id);
+  //console.log(req.budget.userId);
+
+  try {
+    if(req.budget.userId !== req.user.id){
+      const error = new Error(`Unauthorized`)
+      res.status(401).json({msg: error.message});
+      return;
+    }
+
+  } catch (error) {
+      console.log(error);
+      res.status(500).json({ error: `Has been an error` });
+  }
+
+  next();
+}
