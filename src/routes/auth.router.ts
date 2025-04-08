@@ -3,6 +3,7 @@ import { AuthController } from '../controllers/auth.controller';
 import { handleInputErrors } from '../middleware/validation';
 import {body, param} from 'express-validator'
 import { limiter } from '../config/limiter';
+import { authMiddleware } from '../middleware/authentication';
 
 const router = express.Router();
 
@@ -73,6 +74,19 @@ router.post('/reset-password/:token',
     .matches(/[a-zA-Z]/).withMessage('Password must contain at least one letter.'),
   limiter,
   AuthController.resetPasswordWithToken
+);
+
+router.get('/user',
+  authMiddleware,
+  AuthController.user
+);
+
+router.post('/valid-password',
+  body('password')
+    .notEmpty().withMessage('Password cannot be empty.')
+    .isString().withMessage('Password must be a text.'),
+  authMiddleware,
+  AuthController.validPassword
 );
 
 export default router

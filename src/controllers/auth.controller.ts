@@ -4,6 +4,12 @@ import User from '../models/user.model';
 import {createJWT, generateToken} from '../utils/token'
 import { EmailService } from '../emails/emailServices';
 
+type TokenPayload = {
+    id: number;
+    iat: number;
+    exp: number;
+};
+
 export class AuthController {
     static register = async (req: Request, res: Response) => {
         try {
@@ -151,6 +157,28 @@ export class AuthController {
             await user.save();
 
             res.json({msg: 'Password modified correctly'});
+
+        } catch (error) {
+            console.error("Has been an error", error);
+            res.status(500).json({ message: "Internal server error" });
+        }
+    }
+
+    static user = async (req: Request, res: Response) => {
+        res.json(req.user);
+    }
+
+    static validPassword = async (req: Request, res: Response) => {
+        try {
+            const user = await User.findOne({where: {email: req.user.email}}); //we exlude pwd in req.user (middleware), have to get user by its email
+
+            if(!await bcrypt.compare(req.body.password, user.password)){
+                const error = new Error(`Unauthorized, incorrect password`)
+                res.status(401).json({msg: error.message});
+                return;
+            }
+
+            res.json({msg: 'Password is correct'});
 
         } catch (error) {
             console.error("Has been an error", error);
