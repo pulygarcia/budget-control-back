@@ -16,11 +16,11 @@ export class BudgetController {
     try {
         const { name, amount } = req.body;
 
-        const budget = new Budget({ name, amount, userId: req.user.id});
+        const budget = await Budget.create({ name, amount, userId: req.user.id});
 
         await budget.save();  
 
-        res.status(201).json(budget);
+        res.status(201).json('Budget created correctly');
 
     } catch (error) {
         console.log(error);
@@ -29,31 +29,45 @@ export class BudgetController {
   }
 
   static async findById(req: Request, res: Response) {
-    const budget = await Budget.findByPk(req.budget.id, {
-      include: [{ model: Expense }] // Include related expenses
-    });
-    
-    res.status(201).json(budget);
+    try {
+      const budget = await Budget.findByPk(req.budget.id, {
+        include: [{ model: Expense }] // Include related expenses
+      });
+      
+      res.status(201).json(budget);
+      
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ error: "Error getting budget" });
+    }
   }
 
   static async updateBudget(req: Request, res: Response) {
+    try {
       const newData = {
           name: req.body.name || req.budget.name,
           amount: req.body.amount || req.budget.amount
       }
 
-      await req.budget.update(newData); //budget is injected in req by the middleware 'validateHandleExist (budget)'
+      await req.budget.update(newData);
 
       res.status(201).json({
           msg: 'Budget has been updated'
       });
+    } catch (error) {
+        res.status(500).json({ error: 'Error updating budget' });
+    }
   }
 
   static async deleteBudget(req: Request, res: Response) {
+    try {
       await req.budget.destroy();
 
       res.status(201).json({
-        msg: 'Budget has been deleted'
+          msg: 'Budget has been deleted'
       });
+    } catch (error) {
+        res.status(500).json({ error: 'Error deleting budget' });
+    }
   }
 }
