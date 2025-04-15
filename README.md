@@ -8,8 +8,7 @@ This is a RESTful backend for a budget and expense management application. It al
 - [TypeScript](https://www.typescriptlang.org/)
 - [Sequelize](https://sequelize.org/)
 - [PostgreSQL](https://www.postgresql.org/)
-- [Jest](https://jestjs.io/) for testing
-- [Nodemailer](https://nodemailer.com/) for sending emails
+- [Jest](https://jestjs.io/)
 
 ## 🧩 Features
 
