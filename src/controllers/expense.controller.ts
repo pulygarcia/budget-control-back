@@ -7,12 +7,12 @@ export class ExpensesController {
         try {
             const { name, amount } = req.body;
 
-            const expense = new Expense({name, amount});
+            const expense = await Expense.create({name, amount});
             expense.budgetId = req.budget.id; //getting budget from middleware (ValidateBudgetExist)
 
             await expense.save();
         
-            res.status(201).json(expense);
+            res.status(201).json({msg: 'Expense created correctly'});
         } catch (error) {
             console.error("Error creating expense:", error);
             res.status(500).json({ message: "Internal server error" });

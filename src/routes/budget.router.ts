@@ -60,6 +60,7 @@ router.delete('/:budgetId',
 /**Expenses routes */
 router.post('/:budgetId/expenses',
     validateBudgetExist,
+    authorized,
     ExpensesController.create
 );
 router.get('/:budgetId/expenses/:expenseId', 
@@ -83,6 +84,7 @@ router.put('/:budgetId/expenses/:expenseId',
     .toInt(),
     handleInputErrors,
     validateExpenseExist,
+    authorized,
     ExpensesController.updateById
 );
 
@@ -95,6 +97,7 @@ router.delete('/:budgetId/expenses/:expenseId',
     .toInt(),
     handleInputErrors,
     validateExpenseExist,
+    authorized,
     ExpensesController.deleteById
 );
 

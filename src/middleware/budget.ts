@@ -10,27 +10,27 @@ declare global {
   }
 
 export const validateBudgetExist = async (req:Request, res:Response, next:NextFunction) => {
-    try {
-        const { budgetId } = req.params;
+  try {
+    const { budgetId } = req.params;
 
-        const budget = await Budget.findByPk(budgetId);
+    const budget = await Budget.findByPk(budgetId);
 
-        if(!budget){
-            res.status(404).json(
-                { error: `Budget with id ${budgetId} not found` }
-            )
+    if(!budget){
+      res.status(404).json(
+          { error: `Budget with id ${budgetId} not found` }
+      )
 
-            return;
-        };
+      return;
+    };
 
-        req.budget = budget;
-
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({ error: `Has been an error` });
-    }
+    req.budget = budget;
 
     next();
+
+  } catch (error) {
+      console.log(error);
+      res.status(500).json({ error: `Has been an error` });
+    }
 }
 
 export const authorized = async (req:Request, res:Response, next:NextFunction) => {
@@ -44,10 +44,10 @@ export const authorized = async (req:Request, res:Response, next:NextFunction) =
       return;
     }
 
+    next();
+
   } catch (error) {
       console.log(error);
       res.status(500).json({ error: `Has been an error` });
   }
-
-  next();
 }
