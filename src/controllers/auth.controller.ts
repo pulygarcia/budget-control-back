@@ -15,13 +15,13 @@ export class AuthController {
         try {
             const {email, password, name} = req.body;
 
-            const user = new User(req.body);
-
             const existingUser = await User.findOne({ where: { email } });
             if (existingUser) {
                 res.status(400).json({ message: "Email is already in use" });
                 return;
             }
+
+            const user = await User.create(req.body);
 
             const hashedPassword = await bcrypt.hash(password, 10);
 
