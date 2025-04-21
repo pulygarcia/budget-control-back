@@ -17,7 +17,7 @@ export class AuthController {
 
             const existingUser = await User.findOne({ where: { email } });
             if (existingUser) {
-                res.status(400).json({ message: "Email is already in use" });
+                res.status(409).json({ message: "Email is already in use" });
                 return;
             }
 
@@ -34,7 +34,7 @@ export class AuthController {
 
             await user.save();
 
-            res.status(201).json(user);
+            res.status(201).json({msg: 'Registered correctly'});
         } catch (error) {
             console.error("Has been an error", error);
             res.status(500).json({ message: "Internal server error" });

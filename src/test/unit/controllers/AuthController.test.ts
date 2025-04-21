@@ -56,7 +56,7 @@ describe('AuthController.register', () => {
         expect(EmailService.sendVerificationEmail).toHaveBeenCalledWith('Pulei', 'test@example.com', '123456');
     })
 
-    it('should return 400 if email is already in use', async () => {
+    it('should return 409 if email is already in use', async () => {
         (User.findOne as jest.Mock).mockResolvedValue(true); // already exists
     
         const req = createRequest({
@@ -74,7 +74,7 @@ describe('AuthController.register', () => {
     
         await AuthController.register(req, res);
     
-        expect(res.statusCode).toBe(400);
+        expect(res.statusCode).toBe(409);
         expect(res._getJSONData()).toEqual({ message: "Email is already in use" });
       });
     

@@ -4,13 +4,13 @@ import {db} from './config/database';
 import budgetRoutes from './routes/budget.router'
 import authRoutes from './routes/auth.router'
 
-async function connectDB() {
+export async function connectDB() {
     try {
         await db.authenticate();
         db.sync()
-        console.log("Connected to PostgreSQL with Sequelize");
+        //console.log("Connected to PostgreSQL with Sequelize");
       } catch (error) {
-        console.error("Error connecting db:", error);
+        //console.error("Error connecting db:", error);
     }
 }
 
