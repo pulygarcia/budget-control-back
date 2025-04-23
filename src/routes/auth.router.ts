@@ -43,6 +43,8 @@ router.post('/login',
     .trim()
     .isEmail().withMessage('Must provide a valid email address.')
     .normalizeEmail(),
+  body('password')
+    .notEmpty().withMessage('Password field cannot be empty.'),
   handleInputErrors,
   limiter,
   AuthController.login

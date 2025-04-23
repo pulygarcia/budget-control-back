@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt'
 import User from '../models/user.model';
 import {createJWT, generateToken} from '../utils/token'
 import { EmailService } from '../emails/emailServices';
+import { comparePasswords } from '../utils/comparePassword';
 
 type TokenPayload = {
     id: number;
@@ -29,6 +30,11 @@ export class AuthController {
             //add 6 digits token code to verify
             const token = generateToken();
             user.token = token;
+
+            //create global variable with the valid token for integration test (verify account test) to check if really exists. If the enviorment is not production
+            if (process.env.NODE_ENV !== 'production') {
+                globalThis.testToken = user.token;
+            }
             
             EmailService.sendVerificationEmail(name, email, token);
 
@@ -83,7 +89,7 @@ export class AuthController {
                 return;
             }
 
-            const isPasswordValid = await bcrypt.compare(password, user.password);
+            const isPasswordValid = await comparePasswords(password, user.password);
             if (!isPasswordValid) {
                 res.status(401).json({ msg: 'Incorrect password' });
                 return
