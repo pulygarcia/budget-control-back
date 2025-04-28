@@ -224,7 +224,7 @@ describe('Auth - login', () => {
 
   it('should return 200 and token if login is successful', async () => {
     const testEmail = 'jorgito@gmail.com';
-    const fakeToken = 'Ej1213JJSb2adadokffh23445000334LDNV'
+    const fakeToken = 'mocked_token2122212'
 
     jest.spyOn(User, 'findOne').mockResolvedValue({
       id: 1,
@@ -261,5 +261,228 @@ describe('Auth - login', () => {
     expect(generateToken).toHaveBeenCalledTimes(1);
     expect(generateToken).toHaveBeenCalledWith(1); //id for the jwt
 
+  });
+});
+
+//budgets
+let token:string
+async function authenticateUser(){
+
+  const response = await request(server)
+                      .post('/api/auth/login')
+                      .send({
+                        email: 'puleigarcia@email.com',
+                        password: 'Password121'
+                      })
+    /*console.log(response.body);*/ //real token
+    token = response.body.token; //put token into a global variable in order to avoid login again to get it in next it's
+}
+
+describe('GET: /api/budgets', () => {
+  beforeAll(() => {
+    jest.restoreAllMocks() //restore all previous mocks to avoid use a mocked token from other tests.
+  })
+
+  //Start session before the tests in order to get the real token, not a mocked one
+  beforeAll(async() => {
+    await authenticateUser();
+  }) 
+
+  it('should display error trying to get access without authentication (jwt)', async () => {
+    const response = await request(server)
+      .get('/api/budgets')
+      .send({});
+
+    expect(response.statusCode).toBe(403);
+    expect(response.body).toEqual({ msg: 'Invalid token' });
+  });
+
+  it('should return user budgets', async () => {
+    const response = await request(server)
+      .get('/api/budgets')
+      .auth(token, {type: "bearer"}) // Send token via headers
+
+    //console.log(response.body);
+    expect(response.statusCode).not.toBe(403);
+    expect(response.body).not.toEqual({ msg: 'Invalid token' });
+    expect(response.body).toHaveLength(0);
+  });
+
+  it('should display internal server error: token exist but is not valid', async () => {
+    const response = await request(server)
+      .get('/api/budgets')
+      .auth('invalid_token_here', {type: "bearer"}) // Send token via headers
+
+    //console.log(response.body);
+    expect(response.body).toEqual({ message: 'Internal server error' })
+    expect(response.statusCode).toBe(500);
+  });
+});
+
+describe('POST: /api/budgets', () => {
+  beforeAll(() => {
+    jest.restoreAllMocks() //restore all previous mocks to avoid use a mocked token from other tests.
+  })
+
+  //Start session before the tests in order to get the real token, not a mocked one
+  beforeAll(async () => {
+    await authenticateUser();
+  }) 
+
+  it('should reject unauthenticated user without jwt to post budgets', async () => {
+    const response = await request(server)
+      .post('/api/budgets')
+      .send({
+        name: 'example',
+        amount: '9000'
+      })
+
+    //console.log(response.body);
+    expect(response.body).toEqual({ msg: 'Invalid token' })
+    expect(response.statusCode).toBe(403);
+  });
+
+  it('should display errors: empty form creating budget', async () => {
+    const response = await request(server)
+      .post('/api/budgets')
+      .send({
+        name: '',
+        amount: ''
+      })
+      .auth(token, {type: 'bearer'})
+
+    //console.log(response.body);
+    expect(response.statusCode).toBe(400);
+    expect(response.body).toHaveProperty('errors')
+    expect(response.body.errors).toHaveLength(4);
+  });
+
+  it('should create a budget', async () => {
+    const response = await request(server)
+      .post('/api/budgets')
+      .send({
+        name: 'test',
+        amount: 500
+      })
+      .auth(token, {type: 'bearer'})
+
+    console.log(response.body);
+  });
+});
+
+describe('GET: /api/budgets/:id', () => {
+  beforeAll(async() => {
+    await authenticateUser();
+  }) 
+
+  it('should display error trying to get access to budget by id without authentication (jwt)', async () => {
+    const response = await request(server)
+      .get('/api/budgets/1')
+
+    expect(response.statusCode).toBe(403);
+    expect(response.body).toEqual({ msg: 'Invalid token' });
+  });
+
+  it('should display error trying to send budgetId as a string into url', async () => {
+    const response = await request(server)
+      .get('/api/budgets/stringid')
+      .auth(token,{type:'bearer'})
+
+    //console.log(response.body);
+    expect(response.body).toHaveProperty('errors');
+    expect(response.body.errors).toHaveLength(1);
+    expect(response.body.errors).toBeDefined();
+    expect(response.body.errors).toBeTruthy();
+    expect(response.statusCode).toBe(400);
+  });
+
+  it('should display error: not found budget with id 900', async () => {
+    const response = await request(server)
+      .get('/api/budgets/900')
+      .auth(token, {type: 'bearer'})
+
+    //console.log(response.body);
+    expect(response.statusCode).toBe(404);
+    expect(response.body).toHaveProperty('error');
+    expect(response.body).toEqual({ error: 'Budget with id 900 not found' });
+  });
+
+  it('should get a budget with id 1', async () => {
+    const response = await request(server)
+      .get('/api/budgets/1')
+      .send({budget: {
+        id:1
+      }})
+      .auth(token, {type: 'bearer'})
+
+    //console.log(response.body);
+    expect(response.statusCode).toBe(201);
+    expect(response.statusCode).not.toBe(404);
+    expect(response.statusCode).not.toBe(400);
+    expect(response.statusCode).not.toBe(500);
+  });
+});
+
+describe('PATCH: /api/budgets/:id', () => {
+  it('should display error trying to update budget without authentication (jwt)', async () => {
+    const response = await request(server)
+      .patch('/api/budgets/1')
+
+    expect(response.statusCode).toBe(403);
+    expect(response.body).toEqual({ msg: 'Invalid token' });
+  });
+
+  it('should display error: not found budget', async () => {
+    const response = await request(server)
+      .patch('/api/budgets/900')
+      .auth(token, {type: 'bearer'})
+
+    expect(response.statusCode).toBe(404);
+    expect(response.body).toEqual({ error: 'Budget with id 900 not found' });
+  });
+
+  it('should update a budget correctly', async () => {
+    const response = await request(server)
+      .patch('/api/budgets/1')
+      .send({
+        name: 'testing',
+        amount: 600
+      })
+      .auth(token, {type: 'bearer'})
+
+    //console.log(response.body);
+    expect(response.body).toEqual({ msg: 'Budget has been updated' })
+    expect(response.statusCode).toBe(201)
+    expect(response.statusCode).not.toBe(500)
+    expect(response.statusCode).not.toBe(400)
+    expect(response.statusCode).not.toBe(404)
+  });
+});
+
+describe('DELETE: /api/budgets/:id', () => {
+  it('should display error trying to delete budget without authentication (jwt)', async () => {
+    const response = await request(server)
+      .delete('/api/budgets/1')
+
+    expect(response.statusCode).toBe(403);
+    expect(response.body).toEqual({ msg: 'Invalid token' });
+  });
+
+  it('should display error: 404 not found', async () => {
+    const response = await request(server)
+      .delete('/api/budgets/900')
+      .auth(token, {type: 'bearer'})
+      
+    expect(response.statusCode).toBe(404);
+    expect(response.body).toEqual({ error: 'Budget with id 900 not found' });
+  });
+
+  it('should delete budget with id 1', async () => {
+    const response = await request(server)
+      .delete('/api/budgets/1')
+      .auth(token, {type: 'bearer'})
+
+    expect(response.statusCode).toBe(201);
+    expect(response.body).toEqual({ msg: 'Budget has been deleted' });
   });
 });
