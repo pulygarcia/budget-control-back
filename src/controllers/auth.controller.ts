@@ -18,7 +18,7 @@ export class AuthController {
 
             const existingUser = await User.findOne({ where: { email } });
             if (existingUser) {
-                const error = new Error('Email is already in use')
+                const error = new Error(`Email ${email} is already in use`)
                 res.status(409).json({ error: error.message });
                 return;
             }
