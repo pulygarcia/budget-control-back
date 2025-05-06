@@ -20,7 +20,7 @@ export class EmailService {
             </span>
           </div>
 
-          <a href="http://localhost:5173/verify-account?token=${token}" style="display: inline-block; padding: 12px 20px; font-size: 16px; font-weight: bold; color: white; background-color: #007BFF; text-decoration: none; border-radius: 5px; margin-top: 10px;">
+          <a href=${process.env.FRONTEND_URL}/auth/verify-account" style="display: inline-block; padding: 12px 20px; font-size: 16px; font-weight: bold; color: white; background-color: #007BFF; text-decoration: none; border-radius: 5px; margin-top: 10px;">
             Confirm Account
           </a>
 
