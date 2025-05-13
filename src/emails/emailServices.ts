@@ -79,7 +79,7 @@ export class EmailService {
             <p style="font-size: 16px; color: #333;">Please visit the following link and enter the code below to reset your password:</p>
             
             <div style="margin: 20px 0;">
-              <a href="https://yourdomain.com/reset-password" target="_blank" style="display: inline-block; padding: 12px 20px; font-size: 16px; font-weight: bold; color: white; background-color: #007BFF; text-decoration: none; border-radius: 5px;">
+              <a href="http://localhost:3000/auth/reset-password" target="_blank" style="display: inline-block; padding: 12px 20px; font-size: 16px; font-weight: bold; color: white; background-color: #007BFF; text-decoration: none; border-radius: 5px;">
                 Reset Password
               </a>
             </div>
