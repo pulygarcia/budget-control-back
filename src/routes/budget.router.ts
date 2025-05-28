@@ -83,6 +83,7 @@ router.put('/:budgetId/expenses/:expenseId',
     .isInt({ min: 1 }).withMessage('Id must be a number')
     .toInt(),
     handleInputErrors,
+    validateBudgetExist,
     validateExpenseExist,
     authorized,
     ExpensesController.updateById
