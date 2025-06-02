@@ -31,3 +31,12 @@ export const validateExpenseExist = async (req:Request, res:Response, next:NextF
       res.status(500).json({ error: `Has been an error` });
     }
 }
+
+export const belongsToBudget = async (req:Request, res:Response, next:NextFunction) => {
+  if(req.expense.budgetId !== req.budget.id){
+    const error = new Error('Invalid action');
+    res.status(403).json({error: error.message})
+  }
+
+  next()
+}

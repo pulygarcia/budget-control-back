@@ -4,7 +4,7 @@ import { ExpensesController } from '../controllers/expense.controller';
 import { handleInputErrors } from '../middleware/validation';
 import { authorized, validateBudgetExist } from '../middleware/budget';
 import {body, param} from 'express-validator'
-import { validateExpenseExist } from '../middleware/expense';
+import { belongsToBudget, validateExpenseExist } from '../middleware/expense';
 import { authMiddleware } from '../middleware/authentication';
 
 const router = express.Router();
@@ -85,6 +85,7 @@ router.put('/:budgetId/expenses/:expenseId',
     handleInputErrors,
     validateBudgetExist,
     validateExpenseExist,
+    belongsToBudget,
     authorized,
     ExpensesController.updateById
 );
@@ -97,7 +98,9 @@ router.delete('/:budgetId/expenses/:expenseId',
     .isInt({ min: 1 }).withMessage('Id must be a number')
     .toInt(),
     handleInputErrors,
+    validateBudgetExist,
     validateExpenseExist,
+    belongsToBudget,
     authorized,
     ExpensesController.deleteById
 );
