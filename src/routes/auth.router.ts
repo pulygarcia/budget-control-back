@@ -96,6 +96,7 @@ router.post('/change-password',
     }),
 
   limiter,
+  authMiddleware,
   AuthController.changePassword
 );
 
