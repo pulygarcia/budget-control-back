@@ -171,6 +171,38 @@ export class AuthController {
         }
     }
 
+    static changePassword = async (req: Request, res: Response) => {
+        try {
+            const {id} = req.user;
+            const {current_password, password} = req.body;
+
+            const user = await User.findOne({ where: { id} });
+            if (!user) {
+                const error = new Error(`Invalid token`)
+                res.status(403).json({msg: error.message});
+                return;
+            }
+
+            const isMatch = await bcrypt.compare(current_password, user.password);
+            if (!isMatch) {
+                res.status(401).json({ msg: "Current password is incorrect" });
+                return
+            }
+
+            //hash the new one
+            const newHashedPassword = await bcrypt.hash(password, 10);
+
+            user.password = newHashedPassword;
+            await user.save();
+
+            res.json({msg: 'Password modified correctly'});
+
+        } catch (error) {
+            console.error("Has been an error", error);
+            res.status(500).json({ message: "Internal server error" });
+        }
+    }
+
     static user = async (req: Request, res: Response) => {
         res.json(req.user);
     }

@@ -78,6 +78,27 @@ router.post('/reset-password/:token',
   AuthController.resetPasswordWithToken
 );
 
+router.post('/change-password',
+  body('current_password')
+    .isString().withMessage('Current password must be a text.')
+    .notEmpty().withMessage('Current password is required.'),
+
+  body('newPassword')
+    .isString().withMessage('Password must be a text.')
+    .isLength({ min: 8 }).withMessage('Password must be at least 8 characters long.')
+    .matches(/\d/).withMessage('Password must contain at least one number.')
+    .matches(/[a-zA-Z]/).withMessage('Password must contain at least one letter.')
+    .custom((value, { req }) => {
+      if (value === req.body.current_password) {
+        throw new Error('New password must be different from the current password.');
+      }
+      return true;
+    }),
+
+  limiter,
+  AuthController.changePassword
+);
+
 router.get('/user',
   authMiddleware,
   AuthController.user
