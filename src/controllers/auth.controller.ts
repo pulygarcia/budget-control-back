@@ -224,4 +224,32 @@ export class AuthController {
             res.status(500).json({ message: "Internal server error" });
         }
     }
+
+    static updateUser = async (req: Request, res: Response) => {
+        try {
+            const user = await User.findOne({where: {email: req.user.email}});
+            if(!user){
+                const error = new Error(`The user you're trying to update does not exist`)
+                res.status(401).json({msg: error.message});
+                return;
+            }
+    
+            const emailInUse = await User.findOne({ where: { email: req.body.email } });
+            if (req.body.email !== user.email && emailInUse) {
+                const error = new Error(`Email ${req.body.email} is already in use, try with a different one`)
+                res.status(409).json({ msg: error.message });
+                return;
+            }
+    
+            user.email = req.body.email;
+            user.username = req.body.username;
+            await user.save();
+    
+            res.json({msg: 'Your profile data has been updated correctly'});
+            
+        } catch (error) {
+            res.status(500).json({ message: "Internal server error" });
+        }
+
+    }
 }

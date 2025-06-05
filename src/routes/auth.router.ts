@@ -105,6 +105,22 @@ router.get('/user',
   AuthController.user
 );
 
+router.put('/user',
+  body('username')
+    .trim()
+    .isString().withMessage('Name must be a text.')
+    .notEmpty().withMessage('Name is required.')
+    .isLength({ min: 3 }).withMessage('Name must be at least 3 characters long.'),
+    
+  body('email')
+    .trim()
+    .isEmail().withMessage('Must provide a valid email address.')
+    .normalizeEmail(),
+  
+  authMiddleware,
+  AuthController.updateUser
+);
+
 router.post('/valid-password',
   body('password')
     .notEmpty().withMessage('Password cannot be empty.')
